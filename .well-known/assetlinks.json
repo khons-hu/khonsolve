@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dev.khonsu.khonsolve",
+      "sha256_cert_fingerprints": [
+        "87:2B:05:D4:99:BA:64:30:75:05:1C:33:C0:EA:B3:1D:4A:AF:9C:33:8F:8B:41:56:10:EA:8E:5B:3A:1B:CF:17"
+      ]
+    }
+  }
+]
