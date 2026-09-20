@@ -1,4 +1,4 @@
-# Thinkroom
+# Khonsolve
 
 [Open app ↗](https://thinkroom-khonsu.vercel.app/)
 
@@ -30,7 +30,7 @@ No npm install is needed. Runtime files are vendored and loaded on demand. Deplo
 
 Passing the visible cases is not a proof of correctness or a complexity assessment. Written exercises are self-reviewed. Reference answers are teaching examples, not the only valid solution. This is a curated starting collection, not a continuously updated or universally best curriculum.
 
-All local language runners execute in a Worker inside a sandboxed iframe without `allow-same-origin`. Runner CSP blocks HTTP network access (in-memory blob resources are permitted), and the worker is terminated after two seconds of code execution (runtime initialization has a separate limit). There is no server-side execution in Thinkroom. Go Playground and Compiler Explorer run code externally only after you submit it there. TypeScript uses a browser-compatible 6.0.3 transpiler, without semantic type checking or package imports. Python uses Pyodide 314.0.7, with an approximately 14 MB first-run download from this site and no pip support. It is a personal learning runner, not a secure competition judge: a determined user can inspect answers or tamper with their own results. Memory limits depend on the browser. Do not paste secrets or run code you do not understand.
+All local language runners execute in a Worker inside a sandboxed iframe without `allow-same-origin`. Runner CSP blocks HTTP network access (in-memory blob resources are permitted), and the worker is terminated after two seconds of code execution (runtime initialization has a separate limit). There is no server-side execution in Khonsolve. Go Playground and Compiler Explorer run code externally only after you submit it there. TypeScript uses a browser-compatible 6.0.3 transpiler, without semantic type checking or package imports. Python uses Pyodide 314.0.7, with an approximately 14 MB first-run download from this site and no pip support. It is a personal learning runner, not a secure competition judge: a determined user can inspect answers or tamper with their own results. Memory limits depend on the browser. Do not paste secrets or run code you do not understand.
 
 Progress stays in this browser's local storage. Clearing site data or using another device does not preserve it. Export a backup. Import validates the schema, caps file/field sizes, ignores unknown exercise IDs and merges known exercises after explicit confirmation.
 
@@ -52,3 +52,9 @@ Exercises live in `content.mjs`. Include a learning objective, three hints, a wo
 Built by [khonsu](https://khons-hu.vercel.app/) with coding-agent assistance.
 
 Vendored runtime provenance and build notes: [vendor/README.md](vendor/README.md).
+
+## License
+
+Original project code is available under the [MIT License](LICENSE), copyright © 2026 Patrick Obrtal. Third-party components retain their own licenses.
+
+Bundled compiler and runtime notices are documented in [vendor/README.md](vendor/README.md) and retained next to their files. The root MIT license does not replace those terms.
