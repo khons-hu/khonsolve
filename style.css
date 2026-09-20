@@ -21,3 +21,5 @@ button.primary:hover{background:var(--ink);color:var(--paper);border-color:var(-
 
 /* Keep touch form text readable without Safari focus zoom. Pinch zoom stays enabled. */
 @media (pointer:coarse){input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important}button,select{min-height:44px}dialog{overflow-y:auto;overscroll-behavior:contain}}
+
+@media(max-width:600px){.top{height:auto;min-height:76px;padding-top:18px;padding-bottom:18px}.top-actions{width:100%}}
