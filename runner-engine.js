@@ -3,8 +3,16 @@ function workerMain(){
  const send=self.postMessage.bind(self),parse=JSON.parse,stringify=JSON.stringify;
  function canonical(value){if(Array.isArray(value))return value.map(canonical);if(value&&typeof value==='object'){const out={};for(const key of Object.keys(value).sort())out[key]=canonical(value[key]);return out;}return value;}
  self.onmessage=async event=>{
-  const {code,tests}=event.data;
+  let {code,tests,language,resources}=event.data;
   try{
+   if(language==='typescript'){
+    const ts=new Function(resources.typescript+';return ts;')();
+    const out=ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext},reportDiagnostics:true});
+    const errors=(out.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error);
+    if(errors.length)throw Error(ts.flattenDiagnosticMessageText(errors[0].messageText,' '));
+    code=out.outputText;
+   }
+   send({type:'executing'});
    const solve=new Function('"use strict";\n'+code+'\n;return typeof solve === "function" ? solve : null;')();
    if(!solve)throw Error('Define a function named solve.');
    const results=[];

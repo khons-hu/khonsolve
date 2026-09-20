@@ -1,3 +1,5 @@
+import {languages,activeLanguage,starter,draft,setDraft} from './languages.mjs';
+import {resources} from './runtime-loader.mjs';
 import {tracks,exercises} from './content.mjs';
 import {blank,newAttempt,validate,filtered} from './core.mjs';
 const $=id=>document.getElementById(id),ids=exercises.map(e=>e.id),key='thinkroom-v1';
@@ -17,35 +19,49 @@ function renderLibrary(){
  $('exercise-list').replaceChildren(...cards);
 }
 function select(id){if(!ids.includes(id))return;state.selected=id;save();render();$('workspace').focus({preventScroll:true});if(matchMedia('(max-width: 850px)').matches)$('workspace').scrollIntoView({behavior:'instant'});}
+function renderLanguage(){
+ const l=activeLanguage(attempt());$('language').value=l.id;$('run').hidden=!l.runnable;$('run').disabled=!!activeRun||!runnerReady;
+ $('external-runner').hidden=l.runnable;if(l.url){$('external-runner').href=l.url;text('external-runner',`Open ${l.runner} ↗`);}
+ text('runner-note',l.runnable?'Local execution · 2-second code limit · sample checks only':'No in-app compiler for this language.');
+ text('language-note',l.id==='typescript'?'TypeScript is transpiled, not type-checked. Single-file functions only; no package imports.':l.id==='python'?'Python runs in your browser. First run downloads about 14 MB of runtime files from this site. No pip packages. Use None for null and a default parameter for an omitted argument.':l.runnable?'Write a function named solve. Nothing is sent to an execution server.':`Write and save your ${l.label} attempt here, then download it or copy it into ${l.runner}. The external service runs code only after you submit it there. No automatic transfer or grading.`);
+}
+$('download-code').addEventListener('click',()=>{const l=activeLanguage(attempt()),url=URL.createObjectURL(new Blob([$('code').value],{type:'text/plain'})),a=document.createElement('a');a.href=url;a.download=`thinkroom-${current().id}.${l.ext}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 function renderHints(){const a=attempt(),e=current();$('hints').replaceChildren(...e.hints.slice(0,a.hints).map(h=>{const li=document.createElement('li');li.textContent=h;return li;}));text('hint-count',`${a.hints}/3`);$('hint').disabled=a.hints>=e.hints.length;}
 function renderReview(){const a=attempt(),e=current();$('review-panel').hidden=!a.review;$('review-toggle').setAttribute('aria-expanded',String(a.review));text('solution',e.solution);$('reference').hidden=!e.reference; $('reference').open=false;text('reference-code',e.reference||'');$('rubric').replaceChildren(...e.rubric.map((r,i)=>{const label=document.createElement('label');const input=document.createElement('input');input.type='checkbox';input.checked=a.checks.includes(i);input.addEventListener('change',()=>{a.checks=input.checked?[...new Set([...a.checks,i])]:a.checks.filter(n=>n!==i);save();});const span=document.createElement('span');span.textContent=r;label.append(input,span);return label;}));$('reflection').value=a.reflection;text('complete',a.done?'Reviewed ✓ · Undo':'Mark reviewed ✓');}
 function render(){
  const e=current(),a=attempt();text('exercise-category',tracks.find(t=>t.id===e.track).name);text('exercise-number',String(ids.indexOf(e.id)+1).padStart(2,'0'));text('title',e.title);text('difficulty',e.level);text('time',`${e.minutes} min`);text('concept',e.concept);text('brief',e.brief);text('example',e.example);text('constraints',e.constraint);
  $('source').hidden=!e.source;if(e.source){$('source').href=e.source.url;text('source',`Explore further: ${e.source.label} ↗`);}else $('source').removeAttribute('href');
- $('notes').value=a.notes;$('code-section').hidden=!e.starter;$('code').value=a.code??e.starter??'';text('test-results','');text('revisit',a.revisit?'↺ Saved for later':'↺ Save for later');$('revisit').setAttribute('aria-pressed',String(a.revisit));
+ $('notes').value=a.notes;$('code-section').hidden=!e.starter;$('code').value=draft(a,e);renderLanguage();text('test-results','');text('revisit',a.revisit?'↺ Saved for later':'↺ Save for later');$('revisit').setAttribute('aria-pressed',String(a.revisit));
  renderHints();renderReview();renderLibrary();document.documentElement.dataset.theme=state.theme;$('theme').setAttribute('aria-label',state.theme==='dark'?'Switch to light theme':'Switch to dark theme');
- $('run').disabled=!!activeRun||!runnerReady;
+ $('run').disabled=!!activeRun||!runnerReady||!activeLanguage(a).runnable;
 }
 $('search').addEventListener('input',e=>{query=e.target.value;renderLibrary();});$('queue').addEventListener('click',()=>{queue=!queue;renderLibrary();});
 $('pick').addEventListener('click',()=>{const pool=exercises.filter(e=>!state.attempts[e.id]?.done);const candidates=pool.length?pool:exercises;select(candidates[Math.floor(Math.random()*candidates.length)].id);$('workspace').scrollIntoView({behavior:'instant'});});
-for(const field of ['notes','code','reflection'])$(field).addEventListener('input',()=>{attempt()[field]=$(field).value;save();});
+for(const field of ['notes','reflection'])$(field).addEventListener('input',()=>{attempt()[field]=$(field).value;save();});
 
+$('code').addEventListener('input',()=>{setDraft(attempt(),$('code').value);save();});
+$('language').addEventListener('change',()=>{attempt().language=$('language').value;save();$('code').value=draft(attempt(),current());text('test-results','');renderLanguage();});
 $('hint').addEventListener('click',()=>{attempt().hints=Math.min(3,attempt().hints+1);save();renderHints();});
 $('review-toggle').addEventListener('click',()=>{attempt().review=!attempt().review;save();renderReview();});
 $('complete').addEventListener('click',()=>{const a=attempt();if(!a.done&&!a.reflection.trim()){text('save-state','Write a short reflection before marking this reviewed.');$('reflection').focus();return;}a.done=!a.done;save();renderReview();renderLibrary();});
 $('revisit').addEventListener('click',()=>{attempt().revisit=!attempt().revisit;save();text('revisit',attempt().revisit?'↺ Saved for later':'↺ Save for later');$('revisit').setAttribute('aria-pressed',String(attempt().revisit));renderLibrary();});
 $('theme').addEventListener('click',()=>{state.theme=state.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=state.theme;$('theme').setAttribute('aria-label',state.theme==='dark'?'Switch to light theme':'Switch to dark theme');save();});
-$('reset-code').addEventListener('click',()=>{if(!confirm('Replace this exercise’s code with the starter? Your notes stay.'))return;attempt().code=current().starter;$('code').value=attempt().code;save();text('test-results','');});
-function finishRun(){clearTimeout(runTimer);activeRun=null;$('run').disabled=!runnerReady;}
-$('run').addEventListener('click',()=>{
- const e=current();if(!e.tests||!runnerReady||activeRun)return;const id=++runId;activeRun={runId:id,exercise:e.id};$('run').disabled=true;text('test-results','Running. The rubber duck is watching.');
- runTimer=setTimeout(()=>{const stillHere=activeRun?.exercise===state.selected;finishRun();if(stillHere)text('test-results','Runner did not respond. Reload the page and try again.');},4500);
- $('runner').contentWindow.postMessage({type:'run',runId:id,code:$('code').value,tests:e.tests.map(t=>({...t,immutable:e.id==='merge'}))},'*');
+$('reset-code').addEventListener('click',()=>{if(!confirm('Replace this exercise’s code with the starter? Your notes stay.'))return;setDraft(attempt(),starter(current(),activeLanguage(attempt()).id));$('code').value=draft(attempt(),current());save();text('test-results','');});
+function finishRun(){clearTimeout(runTimer);activeRun=null;$('run').disabled=!runnerReady||!activeLanguage(attempt()).runnable;}
+$('run').addEventListener('click',async()=>{
+ const e=current(),language=activeLanguage(attempt());if(!e.tests||!language.runnable||!runnerReady||activeRun)return;
+ const id=++runId,code=$('code').value;activeRun={runId:id,exercise:e.id,language:language.id};$('run').disabled=true;
+ text('test-results',language.id==='python'?'Loading Python locally (about 14 MB on first use)…':language.id==='typescript'?'Loading the TypeScript transpiler…':'Running. The rubber duck is watching.');
+ runTimer=setTimeout(()=>{const visible=activeRun?.exercise===state.selected;finishRun();if(visible)text('test-results','Runtime did not finish loading. Check your connection and try again.');},45000);
+ try{
+  const runtime=await resources(language.id);if(activeRun?.runId!==id)return;
+  $('runner').contentWindow.postMessage({type:'run',runId:id,code,language:language.id,resources:runtime,tests:e.tests.map(t=>({...t,immutable:e.id==='merge'}))},'*');
+ }catch(error){const visible=activeRun?.exercise===state.selected;finishRun();if(visible)text('test-results',String(error.message));}
 });
 addEventListener('message',event=>{
  if(event.source!==$('runner').contentWindow)return;const data=event.data;
- if(data?.type==='runner-ready'){runnerReady=true;$('run').disabled=!!activeRun;return;}
- if(!activeRun||data?.runId!==activeRun.runId)return;const visible=activeRun.exercise===state.selected;finishRun();if(!visible)return;
+ if(data?.type==='runner-ready'){runnerReady=true;$('run').disabled=!!activeRun||!activeLanguage(attempt()).runnable;return;}
+ if(!activeRun||data?.runId!==activeRun.runId)return;if(data.type==='executing'){clearTimeout(runTimer);runTimer=setTimeout(()=>{const visible=activeRun?.exercise===state.selected;finishRun();if(visible)text('test-results','Execution stopped. Try again.');},5000);return;}const visible=activeRun.exercise===state.selected&&activeRun.language===activeLanguage(attempt()).id;finishRun();if(!visible)return;
  if(data.type==='error'){text('test-results',String(data.message).slice(0,500));return;}
  if(data.type!=='result'||!Array.isArray(data.results)){text('test-results','Unexpected runner response.');return;}
  const passed=data.results.filter(r=>r.pass===true).length;const summary=document.createElement('p');summary.className='test-summary';summary.textContent=passed===data.results.length?`${passed}/${data.results.length} checks passed. Now try to break it yourself.`:`${passed}/${data.results.length} checks passed. A useful clue, not a verdict.`;
@@ -54,7 +70,7 @@ addEventListener('message',event=>{
 for(const [trigger,dialog] of [['backup','backup-dialog'],['about','about-dialog']])$(trigger).addEventListener('click',()=>$(dialog).showModal());
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
 $('export').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`thinkroom-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-$('import-file').addEventListener('change',async()=>{pendingImport=null;$('import-confirm').disabled=true;const file=$('import-file').files[0];if(!file)return;if(file.size>2000000){text('import-status','This file is too large. Maximum: 2 MB.');return;}try{pendingImport=validate(JSON.parse(await file.text()),ids);text('import-status',`${Object.keys(pendingImport.attempts).length} saved exercises ready to import.`);$('import-confirm').disabled=false;}catch(error){text('import-status',`Could not read backup: ${error.message}`);}});
+$('import-file').addEventListener('change',async()=>{pendingImport=null;$('import-confirm').disabled=true;const file=$('import-file').files[0];if(!file)return;if(file.size>16000000){text('import-status','This file is too large. Maximum: 16 MB.');return;}try{pendingImport=validate(JSON.parse(await file.text()),ids);text('import-status',`${Object.keys(pendingImport.attempts).length} saved exercises ready to import.`);$('import-confirm').disabled=false;}catch(error){text('import-status',`Could not read backup: ${error.message}`);}});
 $('import-confirm').addEventListener('click',()=>{if(!pendingImport)return;state.attempts={...state.attempts,...pendingImport.attempts};pendingImport=null;$('import-confirm').disabled=true;save();render();text('import-status','Imported. Your notebook is ready.');});
 render();
 
