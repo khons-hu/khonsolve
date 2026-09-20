@@ -22,3 +22,11 @@
 - Go/C/C++ explicitly use external runners; the app does not claim to compile or grade them.
 - Python infinite-loop submission was terminated after two seconds in browser QA.
 - C++ editor and external runner controls visually checked at 390px.
+
+## Local C / C++ compiler (2026-09-20)
+- Browser: C printf produced 42; C++17 std::optional + iostream produced 42.
+- Invalid C displayed source diagnostics, and the next run worked.
+- Infinite C loop terminated after the 2-second program limit.
+- Compiler stays inside the existing opaque-origin sandbox worker. Assets downloaded from this site only on Run. No network isolation relaxation.
+- Explicit experimental Clang 8 label and approximately 60 MB first-load notice. Full-program output is not an automatic exercise pass.
+- Go remains an external-playground workflow. Investigated browser Go toolchains are old/limited; official Go Playground integration requires contacting its operators. No hidden remote execution added.

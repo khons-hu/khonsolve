@@ -15,3 +15,7 @@ esbuild pyodide.asm.mjs --format=iife --global-name=PyModule --define:import.met
 `loader-classic.js` has one adaptation: `getInstantiateWasmFunc` (`Ie`) takes an optional `wasmBinary` ArrayBuffer from configuration. It uses that buffer rather than fetching the WASM URL, preserving Pyodide's exception helper imports and initialization logic. Source changes are visible in Git. This permits the parent to fetch static assets and send buffers to a worker that cannot make HTTP requests. The stdlib is passed using an in-memory blob URL. The unused.invalid URL is a non-fetching base placeholder, not a runtime service.
 
 Do not change this to a same-origin unsandboxed runner. Test correct results, syntax/runtime errors and infinite-loop termination after runtime updates.
+
+## Browser Clang
+
+The `clang/` files come from https://github.com/binji/wasm-clang (downloaded 2026-09-20). Clang 8.0.1 and its WASI C/C++ sysroot are experimental, older tooling, not a current desktop compiler replacement. Original Apache 2 and LLVM license notices are included. No upstream files are modified. `clang-engine.js` supplies C11/C++17 flags and a disposable worker. All compiler assets are served locally, loaded only on explicit Run. No compilation service or API key is used.

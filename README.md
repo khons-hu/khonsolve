@@ -6,7 +6,8 @@ A free practice workshop for coding, debugging, logic, prompts and agent skills.
 
 - 15 original exercises across five tracks.
 - Five executable exercises with JavaScript, TypeScript and Python sample checks in disposable browser workers.
-- Go, C++ and C starter code, separate saved drafts, download and links to external runners. These three languages do not have in-app compilation.
+- Experimental local C11 / C++17 compilation with Clang 8 in WebAssembly. Full programs run with a main function and printed output, rather than automatic exercise grading. First use loads about 60 MB.
+- Go starter code, separate saved drafts, download and a link to Go Playground. Go does not have an in-app compiler.
 - Written exercises with incremental hints, explanations and explicit self-review rubrics.
 - Saved drafts, a revisit list, light/dark themes and JSON backup/import.
 - No account, backend, telemetry, paid dependencies or paid AI calls.
@@ -27,7 +28,7 @@ No npm install is needed. Runtime files are vendored and loaded on demand. Deplo
 
 Passing the visible cases is not a proof of correctness or a complexity assessment. Written exercises are self-reviewed. Reference answers are teaching examples, not the only valid solution. This is a curated starting collection, not a continuously updated or universally best curriculum.
 
-The JavaScript, TypeScript and Python runners execute in a Worker inside a sandboxed iframe without `allow-same-origin`. Runner CSP blocks HTTP network access (in-memory blob resources are permitted), and the worker is terminated after two seconds of code execution (runtime initialization has a separate limit). There is no server-side execution in Thinkroom. Go Playground and Compiler Explorer run code externally only after you submit it there. TypeScript uses a browser-compatible 6.0.3 transpiler, without semantic type checking or package imports. Python uses Pyodide 314.0.7, with an approximately 14 MB first-run download from this site and no pip support. It is a personal learning runner, not a secure competition judge: a determined user can inspect answers or tamper with their own results. Memory limits depend on the browser. Do not paste secrets or run code you do not understand.
+All local language runners execute in a Worker inside a sandboxed iframe without `allow-same-origin`. Runner CSP blocks HTTP network access (in-memory blob resources are permitted), and the worker is terminated after two seconds of code execution (runtime initialization has a separate limit). There is no server-side execution in Thinkroom. Go Playground and Compiler Explorer run code externally only after you submit it there. TypeScript uses a browser-compatible 6.0.3 transpiler, without semantic type checking or package imports. Python uses Pyodide 314.0.7, with an approximately 14 MB first-run download from this site and no pip support. It is a personal learning runner, not a secure competition judge: a determined user can inspect answers or tamper with their own results. Memory limits depend on the browser. Do not paste secrets or run code you do not understand.
 
 Progress stays in this browser's local storage. Clearing site data or using another device does not preserve it. Export a backup. Import validates the schema, caps file/field sizes, ignores unknown exercise IDs and merges known exercises after explicit confirmation.
 

@@ -3,8 +3,8 @@ export const languages=[
 {id:'typescript',label:'TypeScript',ext:'ts',runnable:true},
 {id:'python',label:'Python',ext:'py',runnable:true},
 {id:'go',label:'Go',ext:'go',runnable:false,url:'https://go.dev/play/',runner:'Go Playground'},
-{id:'cpp',label:'C++',ext:'cpp',runnable:false,url:'https://godbolt.org/',runner:'Compiler Explorer'},
-{id:'c',label:'C',ext:'c',runnable:false,url:'https://godbolt.org/',runner:'Compiler Explorer'}];
+{id:'cpp',label:'C++',ext:'cpp',runnable:true,url:'https://godbolt.org/',runner:'Compiler Explorer'},
+{id:'c',label:'C',ext:'c',runnable:true,url:'https://godbolt.org/',runner:'Compiler Explorer'}];
 export function starter(exercise,language){
  if(language==='javascript')return exercise.starter||'';
  const params={repeat:'ids',window:'readings, k',brackets:'text',merge:'intervals',zero:'discount = None'};

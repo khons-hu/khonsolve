@@ -22,8 +22,9 @@ function select(id){if(!ids.includes(id))return;state.selected=id;save();render(
 function renderLanguage(){
  const l=activeLanguage(attempt());$('language').value=l.id;$('run').hidden=!l.runnable;$('run').disabled=!!activeRun||!runnerReady;
  $('external-runner').hidden=l.runnable;if(l.url){$('external-runner').href=l.url;text('external-runner',`Open ${l.runner} ↗`);}
- text('runner-note',l.runnable?'Local execution · 2-second code limit · sample checks only':'No in-app compiler for this language.');
- text('language-note',l.id==='typescript'?'TypeScript is transpiled, not type-checked. Single-file functions only; no package imports.':l.id==='python'?'Python runs in your browser. First run downloads about 14 MB of runtime files from this site. No pip packages. Use None for null and a default parameter for an omitted argument.':l.runnable?'Write a function named solve. Nothing is sent to an execution server.':`Write and save your ${l.label} attempt here, then download it or copy it into ${l.runner}. The external service runs code only after you submit it there. No automatic transfer or grading.`);
+ text('run',l.id==='c'||l.id==='cpp'?'Compile & run':'Run checks');
+ text('runner-note',l.id==='c'||l.id==='cpp'?'Local compilation · 2-second execution limit · write your tests in main()':l.runnable?'Local execution · 2-second code limit · sample checks only':'No in-app compiler for this language.');
+ text('language-note',l.id==='c'||l.id==='cpp'?'Experimental browser Clang 8: C11 / C++17. About 60 MB on first run. Runs your whole program, not automatic exercise checks. Print or assert test cases in main(). No network, packages, threads or interactive input.':l.id==='typescript'?'TypeScript is transpiled, not type-checked. Single-file functions only; no package imports.':l.id==='python'?'Python runs in your browser. First run downloads about 14 MB of runtime files from this site. No pip packages. Use None for null and a default parameter for an omitted argument.':l.runnable?'Write a function named solve. Nothing is sent to an execution server.':`Write and save your ${l.label} attempt here, then download it or copy it into ${l.runner}. The external service runs code only after you submit it there. No automatic transfer or grading.`);
 }
 $('download-code').addEventListener('click',()=>{const l=activeLanguage(attempt()),url=URL.createObjectURL(new Blob([$('code').value],{type:'text/plain'})),a=document.createElement('a');a.href=url;a.download=`thinkroom-${current().id}.${l.ext}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 function renderHints(){const a=attempt(),e=current();$('hints').replaceChildren(...e.hints.slice(0,a.hints).map(h=>{const li=document.createElement('li');li.textContent=h;return li;}));text('hint-count',`${a.hints}/3`);$('hint').disabled=a.hints>=e.hints.length;}
@@ -51,7 +52,7 @@ function finishRun(){clearTimeout(runTimer);activeRun=null;$('run').disabled=!ru
 $('run').addEventListener('click',async()=>{
  const e=current(),language=activeLanguage(attempt());if(!e.tests||!language.runnable||!runnerReady||activeRun)return;
  const id=++runId,code=$('code').value;activeRun={runId:id,exercise:e.id,language:language.id};$('run').disabled=true;
- text('test-results',language.id==='python'?'Loading Python locally (about 14 MB on first use)…':language.id==='typescript'?'Loading the TypeScript transpiler…':'Running. The rubber duck is watching.');
+ text('test-results',language.id==='c'||language.id==='cpp'?'Loading the local compiler (about 60 MB on first use)…':language.id==='python'?'Loading Python locally (about 14 MB on first use)…':language.id==='typescript'?'Loading the TypeScript transpiler…':'Running. The rubber duck is watching.');
  runTimer=setTimeout(()=>{const visible=activeRun?.exercise===state.selected;finishRun();if(visible)text('test-results','Runtime did not finish loading. Check your connection and try again.');},45000);
  try{
   const runtime=await resources(language.id);if(activeRun?.runId!==id)return;
@@ -62,7 +63,8 @@ addEventListener('message',event=>{
  if(event.source!==$('runner').contentWindow)return;const data=event.data;
  if(data?.type==='runner-ready'){runnerReady=true;$('run').disabled=!!activeRun||!activeLanguage(attempt()).runnable;return;}
  if(!activeRun||data?.runId!==activeRun.runId)return;if(data.type==='executing'){clearTimeout(runTimer);runTimer=setTimeout(()=>{const visible=activeRun?.exercise===state.selected;finishRun();if(visible)text('test-results','Execution stopped. Try again.');},5000);return;}const visible=activeRun.exercise===state.selected&&activeRun.language===activeLanguage(attempt()).id;finishRun();if(!visible)return;
- if(data.type==='error'){text('test-results',String(data.message).slice(0,500));return;}
+ if(data.type==='program'){text('test-results',String(data.output).slice(0,16000)+'\n\nProgram finished. This does not mark the exercise as passed.');return;}
+ if(data.type==='error'){text('test-results',String(data.message).slice(0,16000));return;}
  if(data.type!=='result'||!Array.isArray(data.results)){text('test-results','Unexpected runner response.');return;}
  const passed=data.results.filter(r=>r.pass===true).length;const summary=document.createElement('p');summary.className='test-summary';summary.textContent=passed===data.results.length?`${passed}/${data.results.length} checks passed. Now try to break it yourself.`:`${passed}/${data.results.length} checks passed. A useful clue, not a verdict.`;
  $('test-results').replaceChildren(summary,...data.results.slice(0,20).map((r,i)=>{const row=document.createElement('div');row.className=r.pass?'test-pass':'test-fail';row.textContent=`${r.pass?'✓':'×'} Check ${i+1}: expected ${String(r.expected).slice(0,500)} · got ${String(r.actual).slice(0,500)}${r.note?' · '+String(r.note).slice(0,200):''}`;return row;}));
