@@ -18,7 +18,7 @@ function renderLibrary(){
  if(!cards.length){const p=document.createElement('p');p.className='empty';p.textContent=queue?'Nothing here yet. Save an exercise for another round.':'No matches. Try a different word or track.';cards.push(p);}
  $('exercise-list').replaceChildren(...cards);
 }
-function select(id){if(!ids.includes(id))return;state.selected=id;save();render();$('workspace').focus({preventScroll:true});if(matchMedia('(max-width: 850px)').matches)$('workspace').scrollIntoView({behavior:'instant'});}
+function select(id){if(!ids.includes(id))return;cancelRun();state.selected=id;save();render();$('workspace').focus({preventScroll:true});if(matchMedia('(max-width: 850px)').matches)$('workspace').scrollIntoView({behavior:'instant'});}
 function renderLanguage(){
  const l=activeLanguage(attempt());$('language').value=l.id;$('run').hidden=!l.runnable;$('run').disabled=!!activeRun||!runnerReady;
  $('external-runner').hidden=l.runnable;if(l.url){$('external-runner').href=l.url;text('external-runner',`Open ${l.runner} ↗`);}
@@ -40,14 +40,15 @@ $('search').addEventListener('input',e=>{query=e.target.value;renderLibrary();})
 $('pick').addEventListener('click',()=>{const pool=exercises.filter(e=>!state.attempts[e.id]?.done);const candidates=pool.length?pool:exercises;select(candidates[Math.floor(Math.random()*candidates.length)].id);$('workspace').scrollIntoView({behavior:'instant'});});
 for(const field of ['notes','reflection'])$(field).addEventListener('input',()=>{attempt()[field]=$(field).value;save();});
 
-$('code').addEventListener('input',()=>{setDraft(attempt(),$('code').value);save();});
-$('language').addEventListener('change',()=>{attempt().language=$('language').value;save();$('code').value=draft(attempt(),current());text('test-results','');renderLanguage();});
+$('code').addEventListener('input',()=>{cancelRun();text('test-results','');setDraft(attempt(),$('code').value);save();});
+$('language').addEventListener('change',()=>{cancelRun();attempt().language=$('language').value;save();$('code').value=draft(attempt(),current());text('test-results','');renderLanguage();});
 $('hint').addEventListener('click',()=>{attempt().hints=Math.min(3,attempt().hints+1);save();renderHints();});
 $('review-toggle').addEventListener('click',()=>{attempt().review=!attempt().review;save();renderReview();});
 $('complete').addEventListener('click',()=>{const a=attempt();if(!a.done&&!a.reflection.trim()){text('save-state','Write a short reflection before marking this reviewed.');$('reflection').focus();return;}a.done=!a.done;save();renderReview();renderLibrary();});
 $('revisit').addEventListener('click',()=>{attempt().revisit=!attempt().revisit;save();text('revisit',attempt().revisit?'↺ Saved for later':'↺ Save for later');$('revisit').setAttribute('aria-pressed',String(attempt().revisit));renderLibrary();});
 $('theme').addEventListener('click',()=>{state.theme=state.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=state.theme;$('theme').setAttribute('aria-label',state.theme==='dark'?'Switch to light theme':'Switch to dark theme');save();});
-$('reset-code').addEventListener('click',()=>{if(!confirm('Replace this exercise’s code with the starter? Your notes stay.'))return;setDraft(attempt(),starter(current(),activeLanguage(attempt()).id));$('code').value=draft(attempt(),current());save();text('test-results','');});
+$('reset-code').addEventListener('click',()=>{if(!confirm('Replace this exercise’s code with the starter? Your notes stay.'))return;cancelRun();setDraft(attempt(),starter(current(),activeLanguage(attempt()).id));$('code').value=draft(attempt(),current());save();text('test-results','');});
+function cancelRun(){if(!activeRun)return;$('runner').contentWindow.postMessage({type:'cancel'},'*');finishRun();}
 function finishRun(){clearTimeout(runTimer);activeRun=null;$('run').disabled=!runnerReady||!activeLanguage(attempt()).runnable;}
 $('run').addEventListener('click',async()=>{
  const e=current(),language=activeLanguage(attempt());if(!e.tests||!language.runnable||!runnerReady||activeRun)return;
@@ -73,7 +74,7 @@ for(const [trigger,dialog] of [['backup','backup-dialog'],['about','about-dialog
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
 $('export').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`thinkroom-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 $('import-file').addEventListener('change',async()=>{pendingImport=null;$('import-confirm').disabled=true;const file=$('import-file').files[0];if(!file)return;if(file.size>16000000){text('import-status','This file is too large. Maximum: 16 MB.');return;}try{pendingImport=validate(JSON.parse(await file.text()),ids);text('import-status',`${Object.keys(pendingImport.attempts).length} saved exercises ready to import.`);$('import-confirm').disabled=false;}catch(error){text('import-status',`Could not read backup: ${error.message}`);}});
-$('import-confirm').addEventListener('click',()=>{if(!pendingImport)return;state.attempts={...state.attempts,...pendingImport.attempts};pendingImport=null;$('import-confirm').disabled=true;save();render();text('import-status','Imported. Your notebook is ready.');});
+$('import-confirm').addEventListener('click',()=>{if(!pendingImport)return;cancelRun();state.attempts={...state.attempts,...pendingImport.attempts};pendingImport=null;$('import-confirm').disabled=true;save();render();text('import-status','Imported. Your notebook is ready.');});
 render();
 
 $('runner').addEventListener('load',()=>$('runner').contentWindow.postMessage({type:'ping'},'*'));

@@ -30,3 +30,11 @@
 - Compiler stays inside the existing opaque-origin sandbox worker. Assets downloaded from this site only on Run. No network isolation relaxation.
 - Explicit experimental Clang 8 label and approximately 60 MB first-load notice. Full-program output is not an automatic exercise pass.
 - Go remains an external-playground workflow. Investigated browser Go toolchains are old/limited; official Go Playground integration requires contacting its operators. No hidden remote execution added.
+
+## Follow-up flow QA (2026-09-20)
+- Fixed stale results: editing code, changing language/exercise, resetting code or importing a backup cancels the active worker. Verified editing an infinite-loop run immediately re-enables Run, clears stale output and permits a successful 5/5 JavaScript run.
+- Updated About dialog to match actual local C/C++ support.
+- Verified reflection-required guard, marking reviewed, notes and reviewed-state persistence after reload.
+- Verified empty search, combined prompt-track filtering, hidden coding editor on written tasks and the three-hint limit.
+- Inspected 390×844 screenshots: dark C++ compiler/output and light prompt exercise/hints fit the viewport. Reset viewport afterwards.
+- Backup import UI remains unverified: native file picker would not accept automated file selection. Backup schema/round-trip automated coverage passes. No claim of completed browser import.

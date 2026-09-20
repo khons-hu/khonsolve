@@ -2,6 +2,7 @@ let worker,timer,url;
 function cleanup(){clearTimeout(timer);worker?.terminate();worker=null;if(url)URL.revokeObjectURL(url);url=null;}
 addEventListener('message',event=>{
  if(event.source!==parent)return;
+ if(event.data?.type==='cancel'){cleanup();return;}
  if(event.data?.type==='ping'){parent.postMessage({type:'runner-ready'},'*');return;}
  if(event.data?.type!=='run')return;
  cleanup();const {code,tests,runId,language,resources}=event.data;
