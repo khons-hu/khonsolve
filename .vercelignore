@@ -1,0 +1,8 @@
+.git
+.gitignore
+DESIGN.md
+docs
+README.md
+LICENSE
+tests
+server.cjs

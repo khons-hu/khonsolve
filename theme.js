@@ -1,0 +1,1 @@
+try{const theme=JSON.parse(localStorage.getItem('thinkroom-v1')||'{}').theme;document.documentElement.dataset.theme=theme==='dark'?'dark':'light';}catch{document.documentElement.dataset.theme='light';}
