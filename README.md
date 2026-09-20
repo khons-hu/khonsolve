@@ -1,5 +1,7 @@
 # Thinkroom
 
+[Open app ↗](https://thinkroom-khonsu.vercel.app/)
+
 A free practice workshop for coding, debugging, logic, prompts and agent skills. Write an approach, try it, reveal hints when needed, then reflect.
 
 ## What's here
