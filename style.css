@@ -23,3 +23,6 @@ button.primary:hover{background:var(--ink);color:var(--paper);border-color:var(-
 @media (pointer:coarse){input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important}button,select{min-height:44px}dialog{overflow-y:auto;overscroll-behavior:contain}}
 
 @media(max-width:600px){.top{height:auto;min-height:76px;padding-top:18px;padding-bottom:18px}.top-actions{width:100%}}
+
+/* Motion preference: System follows the OS. On and Off are explicit visitor choices. */
+.motion-control{white-space:nowrap;font-size:11px!important}.motion-off *,.motion-off *::before,.motion-off *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}@media(prefers-reduced-motion:reduce){html:not(.motion-force-on){scroll-behavior:auto}html:not(.motion-force-on) *,html:not(.motion-force-on) *::before,html:not(.motion-force-on) *::after{animation:none!important;transition:none!important}}
